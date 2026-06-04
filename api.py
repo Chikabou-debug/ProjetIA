@@ -22,14 +22,14 @@ CORS(app)
 
 # --- CONFIGURATION SIMPLE ---
 
-MODEL_PATH = "models/best_model_b3_20260512_002223.keras"
+MODEL_PATH = os.environ.get("ECOTRI_MODEL_PATH", "models/best_model_b3_20260512_002223.keras")
 IMG_SIZE = (300, 300)
-UPLOAD_DIR = "uploads/scans"
+UPLOAD_DIR = os.environ.get("ECOTRI_UPLOAD_DIR", "uploads/scans")
 
-DB_HOST = "localhost"
-DB_USER = "root"
-DB_PASSWORD = ""
-DB_NAME = "waste_db"
+DB_HOST = os.environ.get("ECOTRI_DB_HOST", "localhost")
+DB_USER = os.environ.get("ECOTRI_DB_USER", "root")
+DB_PASSWORD = os.environ.get("ECOTRI_DB_PASSWORD", "")
+DB_NAME = os.environ.get("ECOTRI_DB_NAME", "waste_db")
 API_KEY = os.environ.get("ECOTRI_API_KEY", "ecotri-demo-key")
 
 CLASSES = ["biological", "metal", "paper", "plastic"]

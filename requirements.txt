@@ -1,0 +1,9 @@
+flask
+flask-cors
+mysql-connector-python
+numpy
+pillow
+tensorflow
+matplotlib
+seaborn
+scikit-learn
