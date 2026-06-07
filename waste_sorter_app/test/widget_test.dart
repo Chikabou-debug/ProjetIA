@@ -17,17 +17,17 @@ void main() {
     expect(find.text('EcoTri AI'), findsOneWidget);
     expect(find.text('Scanner'), findsOneWidget);
     expect(find.text('Historique'), findsOneWidget);
-    expect(find.text('Stats'), findsOneWidget);
-    expect(find.text('Appuyez pour capturer un déchet'), findsOneWidget);
-    expect(find.byIcon(Icons.camera_alt), findsWidgets);
-    expect(find.text('Galerie'), findsOneWidget);
+    expect(find.text('Statistiques'), findsOneWidget);
+    expect(find.text('Scannez vos déchets'), findsOneWidget);
+    expect(find.byIcon(Icons.camera_alt_rounded), findsWidgets);
+    expect(find.text('Choisir depuis la galerie'), findsOneWidget);
   });
 
   testWidgets('ouvre la page historique', (WidgetTester tester) async {
     await tester.pumpWidget(const EcoTriApp());
     await tester.pump();
 
-    await tester.tap(find.byIcon(Icons.history));
+    await tester.tap(find.byIcon(Icons.history_rounded));
     await tester.pump();
 
     expect(find.byType(HistoryPage), findsOneWidget);
@@ -38,7 +38,7 @@ void main() {
     await tester.pumpWidget(const EcoTriApp());
     await tester.pump();
 
-    await tester.tap(find.byIcon(Icons.bar_chart));
+    await tester.tap(find.byIcon(Icons.bar_chart_rounded));
     await tester.pump();
 
     expect(find.byType(StatsPage), findsOneWidget);
@@ -49,11 +49,11 @@ void main() {
     await tester.pumpWidget(const EcoTriApp());
     await tester.pump();
 
-    await tester.tap(find.byIcon(Icons.settings));
+    await tester.tap(find.byIcon(Icons.settings_rounded));
     await tester.pumpAndSettle();
 
     expect(find.text('Configuration API'), findsOneWidget);
-    expect(find.text('URL du serveur Flask'), findsOneWidget);
+    expect(find.text('URL du serveur'), findsOneWidget);
     expect(find.text('Enregistrer'), findsOneWidget);
   });
 }

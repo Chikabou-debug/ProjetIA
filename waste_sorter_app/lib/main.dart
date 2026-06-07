@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -279,6 +280,9 @@ class HistoryPage extends StatefulWidget {
 
 class _HistoryPageState extends State<HistoryPage> {
   late Future<List<HistoryItem>> historyFuture;
+  String selectedFilter = '';
+
+  final List<String> categories = ['', 'biological', 'metal', 'paper', 'plastic'];
 
   @override
   void initState() {
@@ -359,6 +363,19 @@ class _HistoryPageState extends State<HistoryPage> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  List<HistoryItem> _filterItems(List<HistoryItem> items) {
+    if (selectedFilter.isEmpty) return items;
+    return items.where((item) => item.classe == selectedFilter).toList();
+  }
+
+  Map<String, int> _getCategoryStats(List<HistoryItem> items) {
+    final stats = <String, int>{};
+    for (final item in items) {
+      stats[item.classe] = (stats[item.classe] ?? 0) + 1;
+    }
+    return stats;
+  }
+
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
@@ -380,6 +397,9 @@ class _HistoryPageState extends State<HistoryPage> {
           }
 
           final items = snapshot.data ?? [];
+          final filteredItems = _filterItems(items);
+          final stats = _getCategoryStats(items);
+
           if (items.isEmpty) {
             return ListView(
               children: const [
@@ -389,16 +409,100 @@ class _HistoryPageState extends State<HistoryPage> {
             );
           }
 
-          return ListView.builder(
+          return ListView(
             padding: const EdgeInsets.all(16),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return HistoryCard(
-                item: item,
-                onDelete: () => confirmDelete(item),
-              );
-            },
+            children: [
+              if (stats.isNotEmpty) ...[
+                Text(
+                  'Répartition des déchets scannés',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 220,
+                  child: PieChart(
+                    PieChartData(
+                      sections: stats.entries.map((entry) {
+                        final color = classColor(entry.key);
+                        final label = classLabel(entry.key);
+                        return PieChartSectionData(
+                          value: entry.value.toDouble(),
+                          title: '${entry.value}',
+                          color: color,
+                          radius: 60,
+                          titleStyle: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        );
+                      }).toList(),
+                      sectionsSpace: 2,
+                      centerSpaceRadius: 50,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 4,
+                  runSpacing: 4,
+                  children: stats.entries.map((entry) {
+                    final color = classColor(entry.key);
+                    final label = classLabel(entry.key);
+                    return Chip(
+                      label: Text('$label: ${entry.value}'),
+                      backgroundColor: color.withOpacity(0.2),
+                      labelStyle: TextStyle(color: color, fontWeight: FontWeight.bold),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 24),
+              ],
+              Text(
+                'Filtrer par catégorie',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: categories.map((category) {
+                  final isSelected = selectedFilter == category;
+                  final label = category.isEmpty ? 'Tous' : classLabel(category);
+                  final color = category.isEmpty ? Colors.grey : classColor(category);
+
+                  return FilterChip(
+                    label: Text(label),
+                    selected: isSelected,
+                    onSelected: (_) {
+                      setState(() => selectedFilter = category);
+                    },
+                    backgroundColor: color.withOpacity(0.1),
+                    selectedColor: color.withOpacity(0.3),
+                    labelStyle: TextStyle(
+                      color: color,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+              if (filteredItems.isEmpty)
+                const Center(child: Text('Aucun scan dans cette catégorie'))
+              else ...[
+                Text(
+                  '${filteredItems.length} scan${filteredItems.length > 1 ? 's' : ''}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const SizedBox(height: 8),
+                ...filteredItems.map((item) {
+                  return HistoryCard(
+                    item: item,
+                    onDelete: () => confirmDelete(item),
+                  );
+                }).toList(),
+              ],
+            ],
           );
         },
       ),
